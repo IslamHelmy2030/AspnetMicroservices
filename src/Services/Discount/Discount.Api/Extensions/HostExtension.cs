@@ -39,7 +39,7 @@ namespace Discount.Api.Extensions
                     command.ExecuteNonQuery();
 
                     command.CommandText = @"INSERT INTO Coupon (ProductName, Description,Amount) VALUES
-                                            ('Iphone X', 'Iphone Discount', 150), ('Samsung 10', 'Samsung Discount', 100)";
+                                            ('IPhone X', 'Iphone Discount', 150), ('Samsung 10', 'Samsung Discount', 100)";
                     command.ExecuteNonQuery();
 
                     logger.LogInformation($"Migration Postgresql Database Finished at {DateTimeOffset.Now}");

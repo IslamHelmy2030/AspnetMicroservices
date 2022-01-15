@@ -12,7 +12,7 @@ namespace Ordering.Infrastructure.Repositories
 {
     public class RepositoryBase<T> : IAsyncRepository<T> where T : EntityBase
     {
-        private readonly OrderContext _orderContext;
+        protected readonly OrderContext _orderContext;
 
         public RepositoryBase(OrderContext orderContext)
         {

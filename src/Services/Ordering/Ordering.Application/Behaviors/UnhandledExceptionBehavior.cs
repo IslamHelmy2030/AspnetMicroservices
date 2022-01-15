@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Ordering.Application.Behaviors
 {
-    public class UnhandleExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public class UnhandledExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
         private readonly ILogger<TRequest> _logger;
 
-        public UnhandleExceptionBehavior(ILogger<TRequest> logger)
+        public UnhandledExceptionBehavior(ILogger<TRequest> logger)
         {
             _logger = logger;
         }

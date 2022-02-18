@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Shopping.Aggregator.Repositories;
 using Shopping.Aggregator.Services;
 using System;
 
@@ -25,6 +26,7 @@ namespace Shopping.Aggregator
             services.AddHttpClient<IBasketService, BasketService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:BasketUrl")));
             services.AddHttpClient<IOrderService, OrderService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:OrderingUrl")));
 
+            services.AddScoped<IShoppingRepository, ShoppingRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

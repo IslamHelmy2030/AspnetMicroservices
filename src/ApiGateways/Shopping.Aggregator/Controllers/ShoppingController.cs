@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shopping.Aggregator.Models;
-using Shopping.Aggregator.Services;
+using Shopping.Aggregator.Repositories;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,47 +11,18 @@ namespace Shopping.Aggregator.Controllers
     [Route("api/v1/[controller]")]
     public class ShoppingController : ControllerBase
     {
-        private readonly ICatalogService _catalogService;
-        private readonly IBasketService _basketService;
-        private readonly IOrderService _orderService;
+        private readonly IShoppingRepository _shoppingRepository;
 
-        public ShoppingController(ICatalogService catalogService, IBasketService basketService, IOrderService orderService)
+        public ShoppingController(IShoppingRepository shoppingRepository)
         {
-            _catalogService = catalogService ?? throw new ArgumentNullException(nameof(catalogService));
-            _basketService = basketService ?? throw new ArgumentNullException(nameof(basketService));
-            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+            _shoppingRepository = shoppingRepository ?? throw new ArgumentNullException(nameof(shoppingRepository));
         }
 
         [HttpGet("{userName}", Name = "GetShopping")]
         [ProducesResponseType(typeof(ShoppingModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ShoppingModel>> GetShopping(string userName)
         {
-            //Get Busket by username
-            var basket = await _basketService.GetBasket(userName);
-
-            //Get product details foreach item in basket
-            foreach (var item in basket.Items)
-            {
-                var product = await _catalogService.GetCatalog(item.ProductId);
-
-                // set additional product fields
-                item.ProductName = product.Name;
-                item.Category = product.Category;
-                item.Summary = product.Summary;
-                item.Description = product.Description;
-                item.ImageFile = product.ImageFile;
-            }
-
-            //retrieve order list by username
-            var orders = await _orderService.GetOrdersByUserName(userName);
-
-            //Return the shoppingModel Dto including all data
-            var shoppingModel = new ShoppingModel
-            {
-                UserName = userName,
-                BasketWithProducts = basket,
-                Orders = orders
-            };
+            var shoppingModel = await _shoppingRepository.GetShopping(userName);
 
             return Ok(shoppingModel);
         }

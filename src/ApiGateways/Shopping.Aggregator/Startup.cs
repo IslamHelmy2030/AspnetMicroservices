@@ -1,9 +1,11 @@
+using GraphQL.Server.Ui.Voyager;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Shopping.Aggregator.GraphQL;
 using Shopping.Aggregator.Repositories;
 using Shopping.Aggregator.Services;
 using System;
@@ -22,11 +24,13 @@ namespace Shopping.Aggregator
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpClient<ICatalogService, CatalogService>(c=>c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:CatalogUrl")));
+            services.AddHttpClient<ICatalogService, CatalogService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:CatalogUrl")));
             services.AddHttpClient<IBasketService, BasketService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:BasketUrl")));
             services.AddHttpClient<IOrderService, OrderService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:OrderingUrl")));
 
             services.AddScoped<IShoppingRepository, ShoppingRepository>();
+
+            services.AddGraphQLServer().AddQueryType<Query>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -52,7 +56,13 @@ namespace Shopping.Aggregator
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGraphQL();
             });
+
+            app.UseGraphQLVoyager(new VoyagerOptions()
+            {
+                GraphQLEndPoint = "/graphql"
+            }, "/graphql-ui");
         }
     }
 }

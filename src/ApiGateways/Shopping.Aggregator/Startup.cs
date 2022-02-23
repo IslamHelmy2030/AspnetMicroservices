@@ -1,11 +1,15 @@
-using GraphQL.Server.Ui.Voyager;
+using GraphQL.Server;
+using GraphQL.Server.Ui.Playground;
+//using GraphQL.Server.Ui.Voyager;
+//using HotChocolate.AspNetCore.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Shopping.Aggregator.GraphQL;
+using Shopping.Aggregator.GraphQL.Queries;
+using Shopping.Aggregator.GraphQL.Schemas;
 using Shopping.Aggregator.Repositories;
 using Shopping.Aggregator.Services;
 using System;
@@ -21,7 +25,7 @@ namespace Shopping.Aggregator
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // This method gets called by the runtime. Use this method to add services to the container.        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient<ICatalogService, CatalogService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:CatalogUrl")));
@@ -29,8 +33,12 @@ namespace Shopping.Aggregator
             services.AddHttpClient<IOrderService, OrderService>(c => c.BaseAddress = new Uri(Configuration.GetValue<string>("ApiSettings:OrderingUrl")));
 
             services.AddScoped<IShoppingRepository, ShoppingRepository>();
+            services.AddScoped<ShoppingQuery>();
+            services.AddScoped<ShoppingSchema>();
 
-            services.AddGraphQLServer().AddQueryType<Query>();
+            services.AddGraphQL()
+                    .AddSystemTextJson()
+                    .AddGraphTypes(typeof(ShoppingSchema), ServiceLifetime.Scoped);
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -53,16 +61,18 @@ namespace Shopping.Aggregator
 
             app.UseAuthorization();
 
+            app.UseGraphQL<ShoppingSchema>();
+            app.UseGraphQLPlayground(options: new GraphQLPlaygroundOptions());
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapGraphQL();
-            });
+            });            
 
-            app.UseGraphQLVoyager(new VoyagerOptions()
-            {
-                GraphQLEndPoint = "/graphql"
-            }, "/graphql-ui");
+            //app.UseGraphQLVoyager(new VoyagerOptions()
+            //{
+            //    GraphQLEndPoint = "/graphql"
+            //}, "/graphql-ui");
         }
     }
 }
